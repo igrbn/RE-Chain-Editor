@@ -919,10 +919,12 @@ def importChainFile(filepath,options,isChain2 = False):
 				colCapsuleRootObj.re_chain_chaincollision.endRadius = colCapsuleRootObj.re_chain_chaincollision.endRadius
 				
 				#colCapsuleRootObj.show_in_front = bpy.context.scene.re_chain_toolpanel.drawCollisionsThroughObjects
-				modifier = colCapsuleRootObj.modifiers.new(name="REChainGeometryNodes", type='NODES')
+				modifier: bpy.types.NodesModifier = colCapsuleRootObj.modifiers.new(name="REChainGeometryNodes", type='NODES')
 				nodeGroup = getColCapsuleGeoNodeTree()
+				
 				if modifier.node_group != None and modifier.node_group.name in bpy.data.node_groups:
 					bpy.data.node_groups.remove(modifier.node_group)
+					
 				modifier.node_group = nodeGroup
 				
 				#modifier["Start Object"] = startObj.name
@@ -931,9 +933,15 @@ def importChainFile(filepath,options,isChain2 = False):
 				if bpy.app.version < (4,0,0):
 					modifier["Input_0"] = colCapsuleStartObj
 					modifier["Input_1"] = colCapsuleEndObj
-				else:
+					
+				elif bpy.app.version < (5,2,0):
 					modifier["Socket_0"] = colCapsuleStartObj
 					modifier["Socket_1"] = colCapsuleEndObj
+					
+				else:
+					modifier.properties.inputs.Socket_0.value = colCapsuleStartObj
+					modifier.properties.inputs.Socket_1.value = colCapsuleEndObj
+					
 		alignCollisions()
 	#CHAIN LINK IMPORT
 	#print(terminalNameHashDict)#debug
@@ -1040,8 +1048,10 @@ def importChainFile(filepath,options,isChain2 = False):
 				lockObjTransforms(linkCollisionObj)
 				modifier = linkCollisionObj.modifiers.new(name="REChainGeometryNodes", type='NODES')
 				nodeGroup = getLinkColGeoNodeTree()
+				
 				if modifier.node_group != None and modifier.node_group.name in bpy.data.node_groups:
 					bpy.data.node_groups.remove(modifier.node_group)
+					
 				modifier.node_group = nodeGroup
 				
 				if bpy.app.version < (4,0,0):
@@ -1050,11 +1060,18 @@ def importChainFile(filepath,options,isChain2 = False):
 					if objB != None:
 						modifier["Input_1"] = objB
 					
-				else:
+				elif bpy.app.version < (5,2,0):
 					if objA != None:
 						modifier["Socket_0"] = objA
 					if objB != None:
 						modifier["Socket_1"] = objB
+                        
+				else:
+					if objA != None:
+						modifier.properties.inputs.Socket_0.value = objA
+					if objB != None:
+						modifier.properties.inputs.Socket_1.value = objB
+						
 				modifier.node_group.interface_update(bpy.context)
 				linkCollisionObj.re_chain_chainlink_collision.collisionRadius = linkCollision.collisionRadius
 				linkCollisionObj.re_chain_chainlink_collision.collisionFilterFlags = linkCollision.collisionFilterFlags

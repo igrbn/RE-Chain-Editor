@@ -392,9 +392,15 @@ class WM_OT_CollisionFromBones(Operator):
 					if bpy.app.version < (4,0,0):
 						modifier["Input_0"] = colCapsuleStartObj
 						modifier["Input_1"] = colCapsuleEndObj
-					else:
+						
+					elif bpy.app.version < (5,2,0):
 						modifier["Socket_0"] = colCapsuleStartObj
 						modifier["Socket_1"] = colCapsuleEndObj
+						
+					else:
+						modifier.properties.inputs.Socket_0.value = colCapsuleStartObj
+						modifier.properties.inputs.Socket_1.value = colCapsuleEndObj
+					
 				alignCollisions()
 				self.report({"INFO"},"Created collision from bone.")
 		else:
@@ -725,8 +731,10 @@ class WM_OT_CreateChainLinkCollision(Operator):
 						lockObjTransforms(linkCollisionObj)
 						modifier = linkCollisionObj.modifiers.new(name="REChainGeometryNodes", type='NODES')
 						nodeGroup = getLinkColGeoNodeTree()
+						
 						if modifier.node_group != None and modifier.node_group.name in bpy.data.node_groups:
 							bpy.data.node_groups.remove(modifier.node_group)
+							
 						modifier.node_group = nodeGroup
 						
 						if bpy.app.version < (4,0,0):
@@ -735,20 +743,31 @@ class WM_OT_CreateChainLinkCollision(Operator):
 							if objB != None:
 								modifier["Input_1"] = objB
 							
-						else:
+						elif bpy.app.version < (5,2,0):
 							if objA != None:
 								modifier["Socket_0"] = objA
 							if objB != None:
 								modifier["Socket_1"] = objB
+								
+						else:
+							if objA != None:
+								modifier.properties.inputs.Socket_0.value = objA
+							if objB != None:
+								modifier.properties.inputs.Socket_1.value = objB
+								
 						modifier.node_group.interface_update(bpy.context)
+						
 						if isChain2:
 							linkCollision = Chain2LinkNode()
 						else:
 							linkCollision = ChainLinkNode()
+							
 						linkCollisionObj.re_chain_chainlink_collision.collisionRadius = linkCollision.collisionRadius
 						linkCollisionObj.re_chain_chainlink_collision.collisionFilterFlags = linkCollision.collisionFilterFlags
 						linkCollisionObj.show_in_front = bpy.context.scene.re_chain_toolpanel.drawLinkCollisionsThroughObjects
+						
 					self.report({"INFO"},"Created chain link collision.")
+					
 				else:
 					self.report({"ERROR"},"The chain groups do not have the same amount of bones or are not set in the chain link.")
 			

@@ -143,11 +143,17 @@ def update_AngleLimitRad(self, context):
 						if frameChild.get("TYPE",None) == "RE_CHAIN_NODE_FRAME_HELPER":
 							
 							if "REChainGeometryNodes" in frameChild.modifiers:
-								modifier = frameChild.modifiers["REChainGeometryNodes"]
+								modifier: bpy.types.NodesModifier = frameChild.modifiers["REChainGeometryNodes"]
+								
 								if bpy.app.version < (4,0,0):
 									modifier["Input_0"] = obj.re_chain_chainnode.angleLimitRad
-								else:
+									
+								elif bpy.app.version < (5,2,0):
 									modifier["Socket_0"] = obj.re_chain_chainnode.angleLimitRad
+
+								else:
+									modifier.properties.inputs.Socket_0.value = obj.re_chain_chainnode.angleLimitRad
+									
 								modifier.node_group.interface_update(context)
 								#print("Set modifier value")
 							#frameChild.data.spot_size = obj.re_chain_chainnode.angleLimitRad

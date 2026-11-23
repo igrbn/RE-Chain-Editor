@@ -506,9 +506,14 @@ def importCLSPFile(filepath,options):
 			if bpy.app.version < (4,0,0):
 				modifier["Input_0"] = colCapsuleStartObj
 				modifier["Input_1"] = colCapsuleEndObj
-			else:
+				
+			elif bpy.app.version < (5,2,0):
 				modifier["Socket_0"] = colCapsuleStartObj
 				modifier["Socket_1"] = colCapsuleEndObj
+				
+			else:
+				modifier.properties.inputs.Socket_0.value = colCapsuleStartObj
+				modifier.properties.inputs.Socket_1.value = colCapsuleEndObj
 				
 			colCapsuleRootObj.re_chain_chaincollision.clspBitFlag0 = chainCollision.unknBitFlag0
 			colCapsuleRootObj.re_chain_chaincollision.clspBitFlag1 = chainCollision.unknBitFlag1
